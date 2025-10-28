@@ -1,0 +1,34 @@
+# Xcode
+ECGCommunityApp/.DS_Store
+ECGCommunityApp/build/
+ECGCommunityApp/*.pbxuser
+ECGCommunityApp/*.mode1v3
+ECGCommunityApp/*.mode2v3
+ECGCommunityApp/*.perspectivev3
+ECGCommunityApp/xcuserdata/
+ECGCommunityApp/*.xccheckout
+ECGCommunityApp/*.moved-aside
+ECGCommunityApp/DerivedData
+ECGCommunityApp/*.hmap
+ECGCommunityApp/*.ipa
+ECGCommunityApp/*.xcuserstate
+ECGCommunityApp/**/.DS_Store
+
+# CocoaPods
+ECGCommunityApp/Pods/
+
+# Node.js
+backend/node_modules/
+backend/.env
+backend/npm-debug.log
+backend/yarn-error.log
+
+# Web
+web/node_modules/
+
+# General
+.DS_Store
+*.swp
+*.swo
+*~
+

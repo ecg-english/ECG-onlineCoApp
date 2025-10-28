@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECG Community</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header id="header" class="header">
+        <div class="header-content">
+            <h1>ECG Community</h1>
+            <div class="header-right">
+                <div id="userIcon" class="user-icon" onclick="toggleMenu()">
+                    <img src="" alt="User" id="userAvatar" style="display: none;">
+                    <svg id="defaultAvatar" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- メニュー -->
+    <div id="menuOverlay" class="menu-overlay" onclick="toggleMenu()"></div>
+    <div id="menu" class="menu">
+        <button class="menu-item" onclick="showProfile()">プロフィール</button>
+        <button class="menu-item" id="memberListBtn" onclick="showMemberList()" style="display: none;">メンバーリスト</button>
+        <button class="menu-item" onclick="showAbout()">このコミュニティアプリでできること</button>
+        <button class="menu-item" onclick="showEventCalendar()">イベントカレンダー</button>
+        <button class="menu-item admin-only" id="adminPanelBtn" onclick="showAdminPanel()" style="display: none;">管理者画面</button>
+    </div>
+
+    <!-- ログイン画面 -->
+    <div id="loginView" class="view">
+        <div class="login-container">
+            <div class="login-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                </svg>
+            </div>
+            <h1>ECG Community</h1>
+            <form id="loginForm" onsubmit="login(event)">
+                <input type="email" id="loginEmail" placeholder="メールアドレス" required>
+                <input type="password" id="loginPassword" placeholder="パスワード" required>
+                <div id="loginError" class="error-message"></div>
+                <button type="submit" class="btn btn-primary">ログイン</button>
+                <button type="button" class="btn btn-secondary" onclick="showSignup()">アカウントを作成する</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- サインアップ画面 -->
+    <div id="signupView" class="view" style="display: none;">
+        <div class="login-container">
+            <h1>アカウント作成</h1>
+            <form id="signupForm" onsubmit="signup(event)">
+                <input type="text" id="signupUsername" placeholder="ユーザー名" required>
+                <input type="email" id="signupEmail" placeholder="メールアドレス" required>
+                <input type="password" id="signupPassword" placeholder="パスワード" required>
+                <input type="password" id="signupConfirmPassword" placeholder="パスワード（確認）" required>
+                <div id="signupError" class="error-message"></div>
+                <button type="submit" class="btn btn-primary">登録する</button>
+                <button type="button" class="btn btn-secondary" onclick="showLogin()">ログインに戻る</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- メインコンテンツ -->
+    <div id="mainContent" style="display: none;">
+        <!-- タブナビゲーション -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" onclick="showTab('home')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+                <span>Home</span>
+            </button>
+            <button class="tab-btn" onclick="showTab('community')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+                </svg>
+                <span>Community</span>
+            </button>
+            <button class="tab-btn" onclick="showTab('event')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/>
+                </svg>
+                <span>Event</span>
+            </button>
+            <button class="tab-btn" onclick="showTab('learning')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/>
+                </svg>
+                <span>Learning</span>
+            </button>
+            <button class="tab-btn" onclick="showTab('shop')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+                </svg>
+                <span>Shop</span>
+            </button>
+            <button class="tab-btn" onclick="showTab('setting')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94L14.4 2.81c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                </svg>
+                <span>Setting</span>
+            </button>
+        </nav>
+
+        <!-- タブコンテンツ -->
+        <div id="homeTab" class="tab-content active"></div>
+        <div id="communityTab" class="tab-content"></div>
+        <div id="eventTab" class="tab-content"></div>
+        <div id="learningTab" class="tab-content"></div>
+        <div id="shopTab" class="tab-content"></div>
+        <div id="settingTab" class="tab-content"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
