@@ -40,8 +40,13 @@ class CommunityViewModel: ObservableObject {
         do {
             let response = try await apiService.getPosts(channelId: channelId)
             posts = response.posts
+            print("DEBUG: Loaded \(posts.count) posts for channel \(channelId)")
+            for post in posts {
+                print("DEBUG: Post ID: \(post.id), Content: \(post.content), Author: \(post.author.username)")
+            }
         } catch {
             errorMessage = error.localizedDescription
+            print("DEBUG: Error loading posts: \(error)")
         }
         
         isLoading = false
