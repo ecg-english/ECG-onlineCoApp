@@ -191,10 +191,15 @@ struct PostEditView_Previews: PreviewProvider {
                     email: "test@example.com",
                     username: "TestUser",
                     roles: [],
+                    profile: nil,
                     miles: 0,
-                    registeredAt: "",
-                    createdAt: "",
-                    updatedAt: ""
+                    registeredAt: Date(),
+                    lastLoginAt: Date(),
+                    pushNotificationSettings: PushNotificationSettings(
+                        eventReminders: true,
+                        newPosts: true,
+                        newLearningContent: true
+                    )
                 ),
                 content: "テスト投稿",
                 images: [],

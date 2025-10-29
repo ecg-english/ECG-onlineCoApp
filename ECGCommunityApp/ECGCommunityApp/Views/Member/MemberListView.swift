@@ -15,7 +15,7 @@ struct MemberListView: View {
                         selectedMember = member
                     }) {
                         HStack(spacing: 15) {
-                            if let avatarUrl = member.profile.avatarUrl {
+                            if let profile = member.profile, let avatarUrl = profile.avatarUrl {
                                 AsyncImage(url: URL(string: avatarUrl)) { image in
                                     image.resizable()
                                 } placeholder: {
@@ -81,7 +81,7 @@ struct MemberDetailView: View {
                 Section {
                     HStack {
                         Spacer()
-                        if let avatarUrl = member.profile.avatarUrl {
+                        if let profile = member.profile, let avatarUrl = profile.avatarUrl {
                             AsyncImage(url: URL(string: avatarUrl)) { image in
                                 image.resizable()
                             } placeholder: {
@@ -117,7 +117,7 @@ struct MemberDetailView: View {
                 }
                 
                 Section("プロフィール") {
-                    if let nativeLang = member.profile.nativeLanguage {
+                    if let profile = member.profile, let nativeLang = profile.nativeLanguage {
                         HStack {
                             Text("母語")
                             Spacer()
@@ -126,7 +126,7 @@ struct MemberDetailView: View {
                         }
                     }
                     
-                    if let learningLangs = member.profile.learningLanguages, !learningLangs.isEmpty {
+                    if let profile = member.profile, let learningLangs = profile.learningLanguages, !learningLangs.isEmpty {
                         HStack {
                             Text("学習したい言語")
                             Spacer()
@@ -135,7 +135,7 @@ struct MemberDetailView: View {
                         }
                     }
                     
-                    if let country = member.profile.currentCountry {
+                    if let profile = member.profile, let country = profile.currentCountry {
                         HStack {
                             Text("現在いる国")
                             Spacer()
@@ -144,7 +144,7 @@ struct MemberDetailView: View {
                         }
                     }
                     
-                    if let status = member.profile.statusMessage {
+                    if let profile = member.profile, let status = profile.statusMessage {
                         VStack(alignment: .leading) {
                             Text("一言メッセージ")
                                 .font(.caption)
@@ -153,7 +153,7 @@ struct MemberDetailView: View {
                         }
                     }
                     
-                    if let bioText = member.profile.bio {
+                    if let profile = member.profile, let bioText = profile.bio {
                         VStack(alignment: .leading) {
                             Text("自己紹介")
                                 .font(.caption)
@@ -162,7 +162,7 @@ struct MemberDetailView: View {
                         }
                     }
                     
-                    if let insta = member.profile.instagram {
+                    if let profile = member.profile, let insta = profile.instagram {
                         Link(destination: URL(string: "https://instagram.com/\(insta)")!) {
                             HStack {
                                 Image(systemName: "camera")

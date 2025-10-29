@@ -208,6 +208,20 @@ class APIService {
     func purchaseItem(itemId: String) async throws -> PurchaseItemResponse {
         return try await request(endpoint: "/shop/\(itemId)/purchase", method: "POST")
     }
+    
+    // MARK: - Post Management
+    
+    func editPost(postId: String, content: String, images: [String] = []) async throws -> PostResponse {
+        let body: [String: Any] = [
+            "content": content,
+            "images": images
+        ]
+        return try await request(endpoint: "/posts/\(postId)", method: "PUT", body: body)
+    }
+    
+    func deletePost(postId: String) async throws -> MessageResponse {
+        return try await request(endpoint: "/posts/\(postId)", method: "DELETE")
+    }
 }
 
 // MARK: - Response Models
@@ -248,6 +262,36 @@ struct ChannelsResponse: Codable {
 struct ChannelResponse: Codable {
     let message: String
     let channel: Channel
+}
+
+// Postモデルの定義
+struct Comment: Codable, Identifiable {
+    let id: String
+    let user: User
+    let content: String
+    let createdAt: String
+    
+    enum CodingKeys: String, CodingKey {
+        case id = "_id"
+        case user, content, createdAt
+    }
+}
+
+struct Post: Codable, Identifiable {
+    let id: String
+    let channel: String
+    let author: User
+    let content: String
+    let images: [String]
+    let likes: [User]
+    let comments: [Comment]
+    let createdAt: String
+    let updatedAt: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id = "_id"
+        case channel, author, content, images, likes, comments, createdAt, updatedAt
+    }
 }
 
 struct PostsResponse: Codable {
@@ -294,6 +338,10 @@ struct PurchaseItemResponse: Codable {
     let remainingMiles: Int
 }
 
+struct MessageResponse: Codable {
+    let message: String
+}
+
 // MARK: - Errors
 
 enum APIError: LocalizedError {
@@ -312,4 +360,5 @@ enum APIError: LocalizedError {
         }
     }
 }
+
 

@@ -78,7 +78,7 @@ struct MainTabView: View {
                     Button(action: {
                         showMenu.toggle()
                     }) {
-                        if let avatarUrl = authViewModel.currentUser?.profile.avatarUrl {
+                        if let profile = authViewModel.currentUser?.profile, let avatarUrl = profile.avatarUrl {
                             AsyncImage(url: URL(string: avatarUrl)) { image in
                                 image.resizable()
                             } placeholder: {

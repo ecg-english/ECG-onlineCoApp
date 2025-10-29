@@ -5,7 +5,7 @@ struct User: Codable, Identifiable {
     let email: String
     let username: String
     let roles: [Role]
-    let profile: UserProfile
+    let profile: UserProfile?
     let miles: Int
     let registeredAt: Date
     let lastLoginAt: Date

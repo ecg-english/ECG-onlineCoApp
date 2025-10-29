@@ -18,7 +18,7 @@ struct ProfileView: View {
                 Section {
                     HStack {
                         Spacer()
-                        if let avatarUrl = authViewModel.currentUser?.profile.avatarUrl {
+                        if let profile = authViewModel.currentUser?.profile, let avatarUrl = profile.avatarUrl {
                             AsyncImage(url: URL(string: avatarUrl)) { image in
                                 image.resizable()
                             } placeholder: {
@@ -80,7 +80,7 @@ struct ProfileView: View {
                             .frame(minHeight: 100)
                         TextField("Instagram", text: $instagram)
                     } else {
-                        if let nativeLang = authViewModel.currentUser?.profile.nativeLanguage {
+                        if let profile = authViewModel.currentUser?.profile, let nativeLang = profile.nativeLanguage {
                             HStack {
                                 Text("母語")
                                 Spacer()
@@ -89,7 +89,7 @@ struct ProfileView: View {
                             }
                         }
                         
-                        if let learningLangs = authViewModel.currentUser?.profile.learningLanguages, !learningLangs.isEmpty {
+                        if let profile = authViewModel.currentUser?.profile, let learningLangs = profile.learningLanguages, !learningLangs.isEmpty {
                             HStack {
                                 Text("学習したい言語")
                                 Spacer()
@@ -98,7 +98,7 @@ struct ProfileView: View {
                             }
                         }
                         
-                        if let country = authViewModel.currentUser?.profile.currentCountry {
+                        if let profile = authViewModel.currentUser?.profile, let country = profile.currentCountry {
                             HStack {
                                 Text("現在いる国")
                                 Spacer()
@@ -107,7 +107,7 @@ struct ProfileView: View {
                             }
                         }
                         
-                        if let status = authViewModel.currentUser?.profile.statusMessage {
+                        if let profile = authViewModel.currentUser?.profile, let status = profile.statusMessage {
                             VStack(alignment: .leading) {
                                 Text("一言メッセージ")
                                     .font(.caption)
@@ -116,7 +116,7 @@ struct ProfileView: View {
                             }
                         }
                         
-                        if let bioText = authViewModel.currentUser?.profile.bio {
+                        if let profile = authViewModel.currentUser?.profile, let bioText = profile.bio {
                             VStack(alignment: .leading) {
                                 Text("自己紹介")
                                     .font(.caption)
@@ -125,7 +125,7 @@ struct ProfileView: View {
                             }
                         }
                         
-                        if let insta = authViewModel.currentUser?.profile.instagram {
+                        if let profile = authViewModel.currentUser?.profile, let insta = profile.instagram {
                             Link(destination: URL(string: "https://instagram.com/\(insta)")!) {
                                 HStack {
                                     Image(systemName: "camera")
@@ -157,17 +157,19 @@ struct ProfileView: View {
     
     private func loadProfileForEditing() {
         username = authViewModel.currentUser?.username ?? ""
-        nativeLanguage = authViewModel.currentUser?.profile.nativeLanguage ?? ""
-        learningLanguages = authViewModel.currentUser?.profile.learningLanguages?.joined(separator: ", ") ?? ""
-        currentCountry = authViewModel.currentUser?.profile.currentCountry ?? ""
-        statusMessage = authViewModel.currentUser?.profile.statusMessage ?? ""
-        bio = authViewModel.currentUser?.profile.bio ?? ""
-        instagram = authViewModel.currentUser?.profile.instagram ?? ""
+        if let profile = authViewModel.currentUser?.profile {
+            nativeLanguage = profile.nativeLanguage ?? ""
+            learningLanguages = profile.learningLanguages?.joined(separator: ", ") ?? ""
+            currentCountry = profile.currentCountry ?? ""
+            statusMessage = profile.statusMessage ?? ""
+            bio = profile.bio ?? ""
+            instagram = profile.instagram ?? ""
+        }
     }
     
     private func saveProfile() {
         let profile = UserProfile(
-            avatarUrl: authViewModel.currentUser?.profile.avatarUrl,
+            avatarUrl: authViewModel.currentUser?.profile?.avatarUrl,
             nativeLanguage: nativeLanguage.isEmpty ? nil : nativeLanguage,
             learningLanguages: learningLanguages.isEmpty ? nil : learningLanguages.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) },
             currentCountry: currentCountry.isEmpty ? nil : currentCountry,

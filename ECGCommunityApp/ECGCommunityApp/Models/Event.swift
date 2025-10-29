@@ -25,7 +25,7 @@ struct EventPricing: Codable {
 
 struct EventParticipant: Codable, Identifiable {
     let id: String
-    let user: PostAuthor
+    let user: User
     let registeredAt: Date
     
     enum CodingKeys: String, CodingKey {
