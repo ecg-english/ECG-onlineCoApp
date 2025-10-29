@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 @MainActor
 class CommunityViewModel: ObservableObject {
@@ -81,6 +82,14 @@ class CommunityViewModel: ObservableObject {
     func channelsForCategory(_ categoryId: String) -> [Channel] {
         channels.filter { $0.category.id == categoryId }
             .sorted { $0.order < $1.order }
+    }
+    
+    // 特定のカテゴリとチャンネルを見つけるヘルパー関数
+    func findChannel(categoryName: String, channelName: String) -> Channel? {
+        guard let targetCategory = categories.first(where: { $0.name == categoryName }) else {
+            return nil
+        }
+        return channels.first(where: { $0.category.id == targetCategory.id && $0.name == channelName })
     }
 }
 

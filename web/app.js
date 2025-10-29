@@ -1,6 +1,6 @@
 // API設定
 // TODO: Renderにデプロイ後、実際のURLに変更してください
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'https://ecg-community-api.onrender.com/api';
 
 // 状態管理
 let currentUser = null;

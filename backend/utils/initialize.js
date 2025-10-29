@@ -72,15 +72,33 @@ async function initializeDatabase() {
         if (categoryData.name === '雑談') {
           const memberAndAdminRoles = await Role.find({ name: { $in: ['管理者', 'メンバー'] } });
 
-          await Channel.create({
-            name: '自由雑談',
-            description: 'メンバー同士の自由な雑談',
-            category: category._id,
-            viewPermissions: memberAndAdminRoles.map(r => r._id),
-            postPermissions: memberAndAdminRoles.map(r => r._id),
-            order: 1
-          });
-          console.log('チャンネル「自由雑談」を作成しました');
+          // 自由雑談チャンネル
+          const existingFreeChat = await Channel.findOne({ name: '自由雑談', category: category._id });
+          if (!existingFreeChat) {
+            await Channel.create({
+              name: '自由雑談',
+              description: 'メンバー同士の自由な雑談',
+              category: category._id,
+              viewPermissions: memberAndAdminRoles.map(r => r._id),
+              postPermissions: memberAndAdminRoles.map(r => r._id),
+              order: 1
+            });
+            console.log('チャンネル「自由雑談」を作成しました');
+          }
+
+          // 日記 - Diaryチャンネル
+          const existingDiary = await Channel.findOne({ name: '日記 - Diary', category: category._id });
+          if (!existingDiary) {
+            await Channel.create({
+              name: '日記 - Diary',
+              description: '日々の出来事や感想を共有する日記チャンネル',
+              category: category._id,
+              viewPermissions: memberAndAdminRoles.map(r => r._id),
+              postPermissions: memberAndAdminRoles.map(r => r._id),
+              order: 2
+            });
+            console.log('チャンネル「日記 - Diary」を作成しました');
+          }
         }
       }
     }
