@@ -79,6 +79,34 @@ class CommunityViewModel: ObservableObject {
         }
     }
     
+    func editPost(postId: String, content: String, images: [String] = [], channelId: String) async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            _ = try await apiService.editPost(postId: postId, content: content, images: images)
+            await loadPosts(for: channelId)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        
+        isLoading = false
+    }
+    
+    func deletePost(postId: String, channelId: String) async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            _ = try await apiService.deletePost(postId: postId)
+            await loadPosts(for: channelId)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        
+        isLoading = false
+    }
+    
     func channelsForCategory(_ categoryId: String) -> [Channel] {
         channels.filter { $0.category.id == categoryId }
             .sorted { $0.order < $1.order }

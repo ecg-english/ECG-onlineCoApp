@@ -45,6 +45,41 @@ router.post('/', authenticate, canPostToChannel, async (req, res) => {
   }
 });
 
+// 投稿編集（自分の投稿または管理者のみ）
+router.put('/:postId', authenticate, async (req, res) => {
+  try {
+    const { content, images } = req.body;
+    const post = await Post.findById(req.params.postId);
+    
+    if (!post) {
+      return res.status(404).json({ error: '投稿が見つかりません' });
+    }
+
+    // 自分の投稿か管理者かチェック
+    const isAuthor = post.author.toString() === req.user._id.toString();
+    const isAdmin = req.user.roles.some(role => role.name === '管理者');
+
+    if (!isAuthor && !isAdmin) {
+      return res.status(403).json({ error: 'この投稿を編集する権限がありません' });
+    }
+
+    // 投稿を更新
+    post.content = content;
+    post.images = images || post.images;
+    await post.save();
+    
+    const updatedPost = await Post.findById(post._id)
+      .populate('author', 'username profile.avatarUrl')
+      .populate('likes', 'username profile.avatarUrl')
+      .populate('comments.user', 'username profile.avatarUrl');
+
+    res.json({ message: '投稿を編集しました', post: updatedPost });
+  } catch (error) {
+    console.error('投稿編集エラー:', error);
+    res.status(500).json({ error: '投稿の編集に失敗しました' });
+  }
+});
+
 // 投稿削除（自分の投稿または管理者のみ）
 router.delete('/:postId', authenticate, async (req, res) => {
   try {

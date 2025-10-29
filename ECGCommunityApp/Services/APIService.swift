@@ -208,6 +208,20 @@ class APIService {
     func purchaseItem(itemId: String) async throws -> PurchaseItemResponse {
         return try await request(endpoint: "/shop/\(itemId)/purchase", method: "POST")
     }
+    
+    // MARK: - Post Management
+    
+    func editPost(postId: String, content: String, images: [String] = []) async throws -> PostResponse {
+        let body = [
+            "content": content,
+            "images": images
+        ]
+        return try await request(endpoint: "/posts/\(postId)", method: "PUT", body: body)
+    }
+    
+    func deletePost(postId: String) async throws -> MessageResponse {
+        return try await request(endpoint: "/posts/\(postId)", method: "DELETE")
+    }
 }
 
 // MARK: - Response Models
@@ -292,6 +306,10 @@ struct PurchaseItemResponse: Codable {
     let message: String
     let item: ShopItem
     let remainingMiles: Int
+}
+
+struct MessageResponse: Codable {
+    let message: String
 }
 
 // MARK: - Errors

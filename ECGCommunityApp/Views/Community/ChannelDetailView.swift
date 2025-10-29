@@ -68,6 +68,9 @@ struct PostCardView: View {
     
     @State private var showComments = false
     @State private var commentText = ""
+    @State private var showEditMenu = false
+    @State private var showEditPost = false
+    @State private var showDeleteAlert = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -98,6 +101,23 @@ struct PostCardView: View {
                 }
                 
                 Spacer()
+                
+                // 自分の投稿の場合のみ...メニューを表示
+                if isMyPost {
+                    Menu {
+                        Button("編集") {
+                            showEditPost = true
+                        }
+                        
+                        Button("削除", role: .destructive) {
+                            showDeleteAlert = true
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .foregroundColor(.secondary)
+                            .padding(8)
+                    }
+                }
             }
             
             // 投稿内容
@@ -190,11 +210,31 @@ struct PostCardView: View {
         .background(Color(.systemBackground))
         .cornerRadius(10)
         .shadow(radius: 2)
+        .alert("投稿を削除", isPresented: $showDeleteAlert) {
+            Button("キャンセル", role: .cancel) { }
+            Button("削除", role: .destructive) {
+                Task {
+                    await communityViewModel.deletePost(postId: post.id, channelId: channelId)
+                }
+            }
+        } message: {
+            Text("この投稿を削除しますか？この操作は取り消せません。")
+        }
+        .sheet(isPresented: $showEditPost) {
+            PostEditView(post: post, channelId: channelId)
+                .environmentObject(authViewModel)
+                .environmentObject(communityViewModel)
+        }
     }
     
     var isLikedByCurrentUser: Bool {
         guard let currentUserId = authViewModel.currentUser?.id else { return false }
         return post.likes.contains { $0.id == currentUserId }
+    }
+    
+    var isMyPost: Bool {
+        guard let currentUserId = authViewModel.currentUser?.id else { return false }
+        return post.author.id == currentUserId
     }
 }
 
