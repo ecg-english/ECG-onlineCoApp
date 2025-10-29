@@ -222,6 +222,76 @@ class APIService {
     func deletePost(postId: String) async throws -> MessageResponse {
         return try await request(endpoint: "/posts/\(postId)", method: "DELETE")
     }
+
+    // MARK: - Category Management (Admin Only)
+
+    func getCategories() async throws -> CategoriesResponse {
+        return try await request(endpoint: "/categories", method: "GET")
+    }
+
+    func createCategory(name: String, description: String = "", order: Int = 0) async throws -> CategoryResponse {
+        let body: [String: Any] = [
+            "name": name,
+            "description": description,
+            "order": order
+        ]
+        return try await request(endpoint: "/categories", method: "POST", body: body)
+    }
+
+    func editCategory(categoryId: String, name: String, description: String = "", order: Int = 0) async throws -> CategoryResponse {
+        let body: [String: Any] = [
+            "name": name,
+            "description": description,
+            "order": order
+        ]
+        return try await request(endpoint: "/categories/\(categoryId)", method: "PUT", body: body)
+    }
+
+    func deleteCategory(categoryId: String) async throws -> MessageResponse {
+        return try await request(endpoint: "/categories/\(categoryId)", method: "DELETE")
+    }
+
+    // MARK: - Channel Management (Admin Only)
+
+    func getChannels() async throws -> ChannelsResponse {
+        return try await request(endpoint: "/channels", method: "GET")
+    }
+
+    func createChannel(name: String, description: String = "", categoryId: String, viewPermissions: [String] = [], postPermissions: [String] = [], order: Int = 0) async throws -> ChannelResponse {
+        let body: [String: Any] = [
+            "name": name,
+            "description": description,
+            "categoryId": categoryId,
+            "viewPermissions": viewPermissions,
+            "postPermissions": postPermissions,
+            "order": order
+        ]
+        return try await request(endpoint: "/channels", method: "POST", body: body)
+    }
+
+    func editChannel(channelId: String, name: String, description: String = "", categoryId: String? = nil, viewPermissions: [String]? = nil, postPermissions: [String]? = nil, order: Int = 0) async throws -> ChannelResponse {
+        var body: [String: Any] = [
+            "name": name,
+            "description": description,
+            "order": order
+        ]
+        
+        if let categoryId = categoryId {
+            body["categoryId"] = categoryId
+        }
+        if let viewPermissions = viewPermissions {
+            body["viewPermissions"] = viewPermissions
+        }
+        if let postPermissions = postPermissions {
+            body["postPermissions"] = postPermissions
+        }
+        
+        return try await request(endpoint: "/channels/\(channelId)", method: "PUT", body: body)
+    }
+
+    func deleteChannel(channelId: String) async throws -> MessageResponse {
+        return try await request(endpoint: "/channels/\(channelId)", method: "DELETE")
+    }
 }
 
 // MARK: - Response Models
@@ -262,6 +332,15 @@ struct ChannelsResponse: Codable {
 struct ChannelResponse: Codable {
     let message: String
     let channel: Channel
+}
+
+struct CategoriesResponse: Codable {
+    let categories: [Category]
+}
+
+struct CategoryResponse: Codable {
+    let message: String
+    let category: Category
 }
 
 // Postモデルの定義

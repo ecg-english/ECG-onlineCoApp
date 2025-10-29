@@ -248,15 +248,13 @@ struct NewRoleView: View {
 
 struct AdminCategoryManagementView: View {
     var body: some View {
-        Text("カテゴリ管理")
-            .navigationTitle("カテゴリ管理")
+        CategoryManagementView()
     }
 }
 
 struct AdminChannelManagementView: View {
     var body: some View {
-        Text("チャンネル管理")
-            .navigationTitle("チャンネル管理")
+        ChannelManagementView()
     }
 }
 

@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Category = require('../models/Category');
-const { authenticate, requireRole } = require('../middleware/auth');
+const Channel = require('../models/Channel');
+const { authenticate, requireAdmin } = require('../middleware/auth');
 
-// 全カテゴリ取得
+// カテゴリ一覧取得
 router.get('/', authenticate, async (req, res) => {
   try {
     const categories = await Category.find().sort({ order: 1 });
@@ -15,17 +16,20 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // カテゴリ作成（管理者のみ）
-router.post('/', authenticate, requireRole(['管理者']), async (req, res) => {
+router.post('/', authenticate, requireAdmin, async (req, res) => {
   try {
     const { name, description, order } = req.body;
 
-    const category = new Category({
+    if (!name) {
+      return res.status(400).json({ error: 'カテゴリ名は必須です' });
+    }
+
+    const category = await Category.create({
       name,
-      description,
+      description: description || '',
       order: order || 0
     });
 
-    await category.save();
     res.status(201).json({ message: 'カテゴリを作成しました', category });
   } catch (error) {
     console.error('カテゴリ作成エラー:', error);
@@ -33,11 +37,15 @@ router.post('/', authenticate, requireRole(['管理者']), async (req, res) => {
   }
 });
 
-// カテゴリ更新（管理者のみ）
-router.put('/:categoryId', authenticate, requireRole(['管理者']), async (req, res) => {
+// カテゴリ編集（管理者のみ）
+router.put('/:categoryId', authenticate, requireAdmin, async (req, res) => {
   try {
     const { name, description, order } = req.body;
-    
+
+    if (!name) {
+      return res.status(400).json({ error: 'カテゴリ名は必須です' });
+    }
+
     const category = await Category.findByIdAndUpdate(
       req.params.categoryId,
       { name, description, order },
@@ -48,26 +56,31 @@ router.put('/:categoryId', authenticate, requireRole(['管理者']), async (req,
       return res.status(404).json({ error: 'カテゴリが見つかりません' });
     }
 
-    res.json({ message: 'カテゴリを更新しました', category });
+    res.json({ message: 'カテゴリを編集しました', category });
   } catch (error) {
-    console.error('カテゴリ更新エラー:', error);
-    res.status(500).json({ error: 'カテゴリの更新に失敗しました' });
+    console.error('カテゴリ編集エラー:', error);
+    res.status(500).json({ error: 'カテゴリの編集に失敗しました' });
   }
 });
 
 // カテゴリ削除（管理者のみ）
-router.delete('/:categoryId', authenticate, requireRole(['管理者']), async (req, res) => {
+router.delete('/:categoryId', authenticate, requireAdmin, async (req, res) => {
   try {
-    const category = await Category.findByIdAndDelete(req.params.categoryId);
-    
+    const category = await Category.findById(req.params.categoryId);
+
     if (!category) {
       return res.status(404).json({ error: 'カテゴリが見つかりません' });
     }
 
-    // このカテゴリに属するチャンネルも削除
-    const Channel = require('../models/Channel');
-    await Channel.deleteMany({ category: req.params.categoryId });
+    // カテゴリに属するチャンネルがあるかチェック
+    const channels = await Channel.find({ category: req.params.categoryId });
+    if (channels.length > 0) {
+      return res.status(400).json({ 
+        error: 'このカテゴリにはチャンネルが含まれています。先にチャンネルを削除してください。' 
+      });
+    }
 
+    await Category.findByIdAndDelete(req.params.categoryId);
     res.json({ message: 'カテゴリを削除しました' });
   } catch (error) {
     console.error('カテゴリ削除エラー:', error);
@@ -76,4 +89,3 @@ router.delete('/:categoryId', authenticate, requireRole(['管理者']), async (r
 });
 
 module.exports = router;
-

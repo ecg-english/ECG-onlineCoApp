@@ -1,80 +1,61 @@
 const express = require('express');
 const router = express.Router();
 const Channel = require('../models/Channel');
-const { authenticate, requireRole } = require('../middleware/auth');
+const Category = require('../models/Category');
+const Role = require('../models/Role');
+const { authenticate, requireAdmin } = require('../middleware/auth');
 
-// ユーザーが閲覧可能なチャンネル一覧取得
+// チャンネル一覧取得
 router.get('/', authenticate, async (req, res) => {
   try {
-    const userRoleIds = req.user.roles.map(role => role._id.toString());
-    
     const channels = await Channel.find()
-      .populate('category')
-      .populate('viewPermissions')
-      .populate('postPermissions')
-      .sort({ order: 1 });
-
-    // ユーザーが閲覧権限を持つチャンネルのみフィルタリング
-    const accessibleChannels = channels.filter(channel => {
-      return channel.viewPermissions.some(role => 
-        userRoleIds.includes(role._id.toString())
-      );
-    });
-
-    // チャンネルごとに投稿権限があるかどうかを追加
-    const channelsWithPermissions = accessibleChannels.map(channel => {
-      const canPost = channel.postPermissions.some(role => 
-        userRoleIds.includes(role._id.toString())
-      );
-      return {
-        ...channel.toObject(),
-        canPost
-      };
-    });
-
-    res.json({ channels: channelsWithPermissions });
+      .populate('category', 'name description order')
+      .populate('viewPermissions', 'name description')
+      .populate('postPermissions', 'name description')
+      .sort({ 'category.order': 1, order: 1 });
+    
+    res.json({ channels });
   } catch (error) {
     console.error('チャンネル一覧取得エラー:', error);
     res.status(500).json({ error: 'チャンネル一覧の取得に失敗しました' });
   }
 });
 
-// 全チャンネル取得（管理者のみ）
-router.get('/all', authenticate, requireRole(['管理者']), async (req, res) => {
-  try {
-    const channels = await Channel.find()
-      .populate('category')
-      .populate('viewPermissions')
-      .populate('postPermissions')
-      .sort({ order: 1 });
-
-    res.json({ channels });
-  } catch (error) {
-    console.error('全チャンネル取得エラー:', error);
-    res.status(500).json({ error: '全チャンネルの取得に失敗しました' });
-  }
-});
-
 // チャンネル作成（管理者のみ）
-router.post('/', authenticate, requireRole(['管理者']), async (req, res) => {
+router.post('/', authenticate, requireAdmin, async (req, res) => {
   try {
-    const { name, description, category, viewPermissions, postPermissions, order } = req.body;
+    const { name, description, categoryId, viewPermissions, postPermissions, order } = req.body;
 
-    const channel = new Channel({
+    if (!name || !categoryId) {
+      return res.status(400).json({ error: 'チャンネル名とカテゴリIDは必須です' });
+    }
+
+    // カテゴリの存在確認
+    const category = await Category.findById(categoryId);
+    if (!category) {
+      return res.status(404).json({ error: 'カテゴリが見つかりません' });
+    }
+
+    // ロールの存在確認
+    const allRoleIds = [...(viewPermissions || []), ...(postPermissions || [])];
+    const roles = await Role.find({ _id: { $in: allRoleIds } });
+    if (roles.length !== allRoleIds.length) {
+      return res.status(400).json({ error: '無効なロールIDが含まれています' });
+    }
+
+    const channel = await Channel.create({
       name,
-      description,
-      category,
+      description: description || '',
+      category: categoryId,
       viewPermissions: viewPermissions || [],
       postPermissions: postPermissions || [],
       order: order || 0
     });
 
-    await channel.save();
-    
     const populatedChannel = await Channel.findById(channel._id)
-      .populate('category')
-      .populate('viewPermissions')
-      .populate('postPermissions');
+      .populate('category', 'name description order')
+      .populate('viewPermissions', 'name description')
+      .populate('postPermissions', 'name description');
 
     res.status(201).json({ message: 'チャンネルを作成しました', channel: populatedChannel });
   } catch (error) {
@@ -83,44 +64,77 @@ router.post('/', authenticate, requireRole(['管理者']), async (req, res) => {
   }
 });
 
-// チャンネル更新（管理者のみ）
-router.put('/:channelId', authenticate, requireRole(['管理者']), async (req, res) => {
+// チャンネル編集（管理者のみ）
+router.put('/:channelId', authenticate, requireAdmin, async (req, res) => {
   try {
-    const { name, description, category, viewPermissions, postPermissions, order } = req.body;
-    
+    const { name, description, categoryId, viewPermissions, postPermissions, order } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ error: 'チャンネル名は必須です' });
+    }
+
+    // カテゴリの存在確認（categoryIdが提供されている場合）
+    if (categoryId) {
+      const category = await Category.findById(categoryId);
+      if (!category) {
+        return res.status(404).json({ error: 'カテゴリが見つかりません' });
+      }
+    }
+
+    // ロールの存在確認
+    const allRoleIds = [...(viewPermissions || []), ...(postPermissions || [])];
+    if (allRoleIds.length > 0) {
+      const roles = await Role.find({ _id: { $in: allRoleIds } });
+      if (roles.length !== allRoleIds.length) {
+        return res.status(400).json({ error: '無効なロールIDが含まれています' });
+      }
+    }
+
+    const updateData = { name, description, order };
+    if (categoryId) updateData.category = categoryId;
+    if (viewPermissions) updateData.viewPermissions = viewPermissions;
+    if (postPermissions) updateData.postPermissions = postPermissions;
+
     const channel = await Channel.findByIdAndUpdate(
       req.params.channelId,
-      { name, description, category, viewPermissions, postPermissions, order },
+      updateData,
       { new: true }
-    )
-    .populate('category')
-    .populate('viewPermissions')
-    .populate('postPermissions');
+    );
 
     if (!channel) {
       return res.status(404).json({ error: 'チャンネルが見つかりません' });
     }
 
-    res.json({ message: 'チャンネルを更新しました', channel });
+    const populatedChannel = await Channel.findById(channel._id)
+      .populate('category', 'name description order')
+      .populate('viewPermissions', 'name description')
+      .populate('postPermissions', 'name description');
+
+    res.json({ message: 'チャンネルを編集しました', channel: populatedChannel });
   } catch (error) {
-    console.error('チャンネル更新エラー:', error);
-    res.status(500).json({ error: 'チャンネルの更新に失敗しました' });
+    console.error('チャンネル編集エラー:', error);
+    res.status(500).json({ error: 'チャンネルの編集に失敗しました' });
   }
 });
 
 // チャンネル削除（管理者のみ）
-router.delete('/:channelId', authenticate, requireRole(['管理者']), async (req, res) => {
+router.delete('/:channelId', authenticate, requireAdmin, async (req, res) => {
   try {
-    const channel = await Channel.findByIdAndDelete(req.params.channelId);
-    
+    const channel = await Channel.findById(req.params.channelId);
+
     if (!channel) {
       return res.status(404).json({ error: 'チャンネルが見つかりません' });
     }
 
-    // このチャンネルの投稿も削除
-    const Post = require('../models/Post');
-    await Post.deleteMany({ channel: req.params.channelId });
+    // TODO: チャンネルに投稿があるかチェックして、投稿がある場合は警告を出す
+    // const posts = await Post.find({ channel: req.params.channelId });
+    // if (posts.length > 0) {
+    //   return res.status(400).json({ 
+    //     error: 'このチャンネルには投稿が含まれています。先に投稿を削除してください。' 
+    //   });
+    // }
 
+    await Channel.findByIdAndDelete(req.params.channelId);
     res.json({ message: 'チャンネルを削除しました' });
   } catch (error) {
     console.error('チャンネル削除エラー:', error);
@@ -129,4 +143,3 @@ router.delete('/:channelId', authenticate, requireRole(['管理者']), async (re
 });
 
 module.exports = router;
-

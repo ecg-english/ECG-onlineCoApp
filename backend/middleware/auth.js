@@ -47,6 +47,26 @@ exports.requireRole = (requiredRoles) => {
   };
 };
 
+// 管理者権限確認ミドルウェア
+exports.requireAdmin = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: '認証が必要です' });
+    }
+
+    const userRoleNames = req.user.roles.map(role => role.name);
+    const isAdmin = userRoleNames.includes('管理者');
+
+    if (!isAdmin) {
+      return res.status(403).json({ error: '管理者権限が必要です' });
+    }
+
+    next();
+  } catch (error) {
+    res.status(500).json({ error: '管理者権限確認エラー' });
+  }
+};
+
 // チャンネル閲覧権限確認
 exports.canViewChannel = async (req, res, next) => {
   try {
