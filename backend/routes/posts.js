@@ -15,8 +15,22 @@ router.get('/channel/:channelId', authenticate, canViewChannel, async (req, res)
           select: 'name description permissions'
         }
       })
-      .populate('likes', 'username profile.avatarUrl')
-      .populate('comments.user', 'username profile.avatarUrl')
+      .populate({
+        path: 'likes',
+        select: 'username email profile miles registeredAt lastLoginAt pushNotificationSettings',
+        populate: {
+          path: 'roles',
+          select: 'name description permissions'
+        }
+      })
+      .populate({
+        path: 'comments.user',
+        select: 'username email profile miles registeredAt lastLoginAt pushNotificationSettings',
+        populate: {
+          path: 'roles',
+          select: 'name description permissions'
+        }
+      })
       .sort({ createdAt: -1 });
 
     res.json({ posts });
