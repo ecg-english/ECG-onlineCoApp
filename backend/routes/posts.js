@@ -7,7 +7,7 @@ const { authenticate, canViewChannel, canPostToChannel } = require('../middlewar
 router.get('/channel/:channelId', authenticate, canViewChannel, async (req, res) => {
   try {
     const posts = await Post.find({ channel: req.params.channelId })
-      .populate('author', 'username profile.avatarUrl')
+      .populate('author')
       .populate('likes', 'username profile.avatarUrl')
       .populate('comments.user', 'username profile.avatarUrl')
       .sort({ createdAt: -1 });
